@@ -1,0 +1,8 @@
+S: s1,s2,reject,s3,s4
+G:  ,aa,c,012
+D: s1,aa,s1, ,>
+D: s1,c,reject,012,-
+D: s1,(aa|c| ),s3,(012|012|012),<
+D: s3,[aa|c],s4,[012|c| ],<
+D: s4(*r),[aa|c],s1(*w),[012|c| ],<
+D: s2(*r)XYZ,(aa|c),s2(*w)XYZ,(012|c),<
