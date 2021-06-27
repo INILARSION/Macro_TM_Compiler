@@ -26,6 +26,9 @@ struct program {
     int state_count;
     // Array of all elements of the alphabet. Elements are strings.
     char **alphabet;
+    // Array of alphabet indexes (from 0,1,...,alphabet_size)
+    // Helper for * Wildcards
+    int *alphabet_indexes;
     // Number of different alphabet elements
     int alphabet_size;
     // Array of all deltas/transitions of the Program

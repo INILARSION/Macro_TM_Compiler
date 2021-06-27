@@ -77,12 +77,14 @@ void parse_alphabet(struct program *program, char *line, size_t line_length) {
     }
 
     program->alphabet = malloc(program->alphabet_size * sizeof(char*));
+    program->alphabet_indexes = malloc(program->alphabet_size * sizeof(char*));
 
     // get the length of the individual alphabet symbols and put them then in a list
     line[line_length] = '\0';
     for (int current_element = 0; current_element < program->alphabet_size; ++current_element){
         // add symbol to the list
         program->alphabet[current_element] = strdup(strsep(&line, ","));
+        program->alphabet_indexes[current_element] = current_element;
     }
 }
 
@@ -101,41 +103,70 @@ int search_matching_element(char **line, char **elements, int element_count) {
         }
     }
     if (found_match == -1) {
-        printf("Program delta contains state which is not contained in the defined states!");
+        printf("Program delta contains state or tape symbol which is not contained in the defined!");
         exit(-1);
     }
     return matched_index;
 }
 
-int get_element_count(char *symbol, char seperator) {
+/*
+ * Count all symbols in a line, which are seperated by a seperator char
+ */
+int get_element_count(char *line, char seperator) {
     int count = 1;
-    while (*symbol != '\0') {
-        if (*symbol == seperator)
+    while (*line != '\0') {
+        if (*line == seperator)
             ++count;
-        ++symbol;
+        ++line;
     }
     return count;
 }
 
+/*
+ * Create a alphabet symbol helper struct.
+ * The symbols contain a read/write symbol or a listing of those.
+ * The helper struct contains how many and which symbols are used and if they should be matched 1 to 1 or 1 to n or None
+ */
 struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *symbols) {
     struct alphabet_symbols *alphabet_symbols = malloc(sizeof(struct alphabet_symbols));
     int symbols_len = strlen(symbols);
-    if (symbols[0] == '(') {
+
+     if (symbols[0] == '(') {
         if (symbols[symbols_len - 1] != ')') {
             printf("Malformed delta, ) ist missing!");
             exit(-1);
         }
+
+        alphabet_symbols->type = '1';
+
+        // check if "(*) wildcard is used, then use all alphabet symbols
+        if (strcmp(symbols, "(*)") == 0) {
+            alphabet_symbols->symbol_count = program->alphabet_size;
+            alphabet_symbols->symbols = program->alphabet_indexes;
+            return alphabet_symbols;
+        }
+
+        // remove '(' and ')' from the string to parse later
         symbols[symbols_len - 1] = '\0';
         ++symbols;
-        alphabet_symbols->type = '1';
     } else if (symbols[0] == '[') {
         if (symbols[symbols_len - 1] != ']') {
             printf("Malformed delta, ] is missing!");
             exit(-1);
         }
+
+        alphabet_symbols->type = 'n';
+
+        // check if "[*] wildcard is used, then use all alphabet symbols
+         if (strcmp(symbols, "[*]") == 0) {
+             alphabet_symbols->symbol_count = program->alphabet_size;
+             alphabet_symbols->symbols = program->alphabet_indexes;
+             return alphabet_symbols;
+         }
+
+        // remove '(' and ')' from the string to parse later
         symbols[symbols_len - 1] = '\0';
         ++symbols;
-        alphabet_symbols->type = 'n';
     } else {
         alphabet_symbols->type = '0';
     }
@@ -148,10 +179,16 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
     return alphabet_symbols;
 }
 
+/*
+ * Create a state name helper struct.
+ * Since a state name can have a part substituted by a read or write symbol it needs to be parsed.
+ * The Struct contains the prefix, postfix and if a read or write symbol or no symbol should be placed between pre/postfix.
+ */
 struct state_helper *get_state_helper(char* state) {
     struct state_helper *state_helper = malloc(sizeof(struct state_helper));
     int state_len = strlen(state);
     for (int i = 0; i < state_len; ++i) {
+        // check if a read/write symbol should be substituted
         if (state[i] == '(' && state[i + 1] == '*' && (state[i + 2] == 'r' || state[i + 2] == 'w')) {
             state_helper->substitution_type = state[i + 2];
             state_helper->state_prefix = strndup(state, i);
@@ -159,11 +196,15 @@ struct state_helper *get_state_helper(char* state) {
             return state_helper;
         }
     }
+    // if no substitution, just use the whole state name as prefix
     state_helper->substitution_type = '0';
     state_helper->state_prefix = state;
     return state_helper;
 }
 
+/*
+ * This function checks if a state name is contained in the state name list and adds it if not.
+ */
 void add_state_to_program(struct program *program, char *state) {
     // check if state is yet contained
     for (int i = 0; i < program->state_count; ++i) {
@@ -175,6 +216,9 @@ void add_state_to_program(struct program *program, char *state) {
     program->state_names[program->state_count - 1] = state;
 }
 
+/*
+ * This function creates the state name with a state helper struct and the read/write symbols.
+ */
 char *generate_state_str(struct program *program, struct state_helper *state_helper, int read_symbol, int write_symbol){
     if (state_helper->substitution_type == '0')
             return state_helper->state_prefix;
@@ -195,18 +239,25 @@ char *generate_state_str(struct program *program, struct state_helper *state_hel
     return state;
 }
 
+/*
+ * This function generates deltas which have makros for read and write symbols
+ * Example: read symbols: (a|b|c) write symbols: (x|y|) will generate deltas with: (a,x), (b,y), (c,z) as (read, write) symbols
+ * number of read and write symbols have to be the same
+ */
 void generate_1t1_deltas(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement) {
     if (read_symbols->symbol_count != write_symbols->symbol_count) {
         printf("Number of read symbols are not equal the number of write symbols!\n");
         exit(-1);
     }
-    
+
+    // If array empty create new one, else reallocate more memory
     if (program->deltas_count == 0) {
         program->deltas = malloc(read_symbols->symbol_count * sizeof(struct deltas*));
     } else {
         program->deltas = realloc(program->deltas, (program->deltas_count + read_symbols->symbol_count) * sizeof(struct deltas*));
     }
 
+    // create the different deltas and save them in the program struct
     for (int i = 0; i < read_symbols->symbol_count; ++i) {
         struct deltas *delta = malloc(sizeof(struct deltas));
         delta->read_symbol = read_symbols->symbols[i];
@@ -219,14 +270,21 @@ void generate_1t1_deltas(struct program *program, struct state_helper *state, st
     program->deltas_count += read_symbols->symbol_count;
 }
 
+/*
+ * This function generates deltas which have makros for read and write symbols
+ * Example: read symbols: (a|b|c) write symbols: (x|y) will generate deltas with: (a,x) (a,y), (b,x), (b,y), (c,x), (c,y) as (read, write) symbols
+ */
 void generate_1tn_deltas(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement) {
     int new_deltas = read_symbols->symbol_count * write_symbols->symbol_count;
+
+    // If array empty create new one, else reallocate more memory
     if (program->deltas_count == 0) {
         program->deltas = malloc(new_deltas * sizeof(struct deltas*));
     } else {
         program->deltas = realloc(program->deltas, (program->deltas_count + new_deltas) * sizeof(struct deltas*));
     }
 
+    // create the different deltas and save them in the program struct
     for (int i = 0; i < read_symbols->symbol_count; ++i) {
         for (int j = 0; j < write_symbols->symbol_count; ++j) {
             struct deltas *delta = malloc(sizeof(struct deltas));
@@ -241,8 +299,12 @@ void generate_1tn_deltas(struct program *program, struct state_helper *state, st
     program->deltas_count += new_deltas;
 }
 
+/*
+ * This function generates deltas which have no makros for read and write symbols
+ */
 void generate_1_delta(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement) {
     struct deltas *delta = malloc(sizeof(struct deltas));
+    // create the different delta and save it in the program struct
     delta->read_symbol = *read_symbols->symbols;
     delta->write_symbol = *write_symbols->symbols;
     delta->state = generate_state_str(program, state, delta->read_symbol, delta->write_symbol);
@@ -305,6 +367,7 @@ void parse_deltas(struct program *program, FILE *file_ptr, int line_count) {
             exit(-1);
         }
 
+        // create the deltas
         switch (read_symbols->type) {
             case '0':
                 generate_1_delta(program, state, subsequent_state, read_symbols, write_symbols, movement);
@@ -365,6 +428,9 @@ struct program *parse_program(char *program_file_path) {
     return program;
 }
 
+/*
+ * Write the compiled program to a file.
+ */
 void write_compiled_program(struct program *program, char *filename) {
     FILE *file_ptr = fopen(filename, "w");
 
@@ -382,6 +448,7 @@ void write_compiled_program(struct program *program, char *filename) {
     }
     fprintf(file_ptr, "%s\n", program->alphabet[program->alphabet_size - 1]);
 
+    // write deltas
     for (int i = 0; i < program->deltas_count; ++i) {
         struct deltas *delta = program->deltas[i];
         fprintf(file_ptr, "D: %s,%s,%s,%s,%c\n", delta->state, program->alphabet[delta->read_symbol], delta->subsequent_state, program->alphabet[delta->write_symbol], delta->movement);
