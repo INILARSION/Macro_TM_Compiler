@@ -131,40 +131,40 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
     struct alphabet_symbols *alphabet_symbols = malloc(sizeof(struct alphabet_symbols));
     int symbols_len = strlen(symbols);
 
-     if (symbols[0] == '(') {
-        if (symbols[symbols_len - 1] != ')') {
+     if (symbols[0] == '[') {
+        if (symbols[symbols_len - 1] != ']') {
             printf("Malformed delta, ) ist missing!");
             exit(-1);
         }
 
         alphabet_symbols->type = '1';
 
-        // check if "(*) wildcard is used, then use all alphabet symbols
-        if (strcmp(symbols, "(*)") == 0) {
+        // check if "[*] wildcard is used, then use all alphabet symbols
+        if (strcmp(symbols, "[*]") == 0) {
             alphabet_symbols->symbol_count = program->alphabet_size;
             alphabet_symbols->symbols = program->alphabet_indexes;
             return alphabet_symbols;
         }
 
-        // remove '(' and ')' from the string to parse later
+        // remove '[' and ']' from the string to parse the different alphabet symbols later
         symbols[symbols_len - 1] = '\0';
         ++symbols;
-    } else if (symbols[0] == '[') {
-        if (symbols[symbols_len - 1] != ']') {
+    } else if (symbols[0] == '{') {
+        if (symbols[symbols_len - 1] != '}') {
             printf("Malformed delta, ] is missing!");
             exit(-1);
         }
 
         alphabet_symbols->type = 'n';
 
-        // check if "[*] wildcard is used, then use all alphabet symbols
-         if (strcmp(symbols, "[*]") == 0) {
+        // check if "{*} wildcard is used, then use all alphabet symbols
+         if (strcmp(symbols, "{*}") == 0) {
              alphabet_symbols->symbol_count = program->alphabet_size;
              alphabet_symbols->symbols = program->alphabet_indexes;
              return alphabet_symbols;
          }
 
-        // remove '(' and ')' from the string to parse later
+        // remove '{' and '}' from the string to parse later
         symbols[symbols_len - 1] = '\0';
         ++symbols;
     } else {
