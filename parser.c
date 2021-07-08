@@ -123,6 +123,56 @@ int get_element_count(char *line, char seperator) {
 }
 
 /*
+ * This function handles read and write makros with a '*' Wildcard.
+ * If just '*' is used, insert all alphabet symbols.
+ * If *-(...) is used, insert all alphabet symbols minus the listed ones.
+ */
+void handle_wildcard_symbol(struct program *program, struct alphabet_symbols *alphabet_symbols, char *symbols, int symbols_len) {
+    if (symbols_len == 3) {
+        alphabet_symbols->symbol_count = program->alphabet_size;
+        alphabet_symbols->symbols = program->alphabet_indexes;
+        return;
+    }
+
+    if (strncmp(symbols+1, "*-(", 3) != 0 || symbols[symbols_len - 2] != ')') {
+        printf("Malformed Wildcard!");
+        exit(-1);
+    }
+
+    // remove first parenthesis and "*-(", and last 2 parentheses
+    symbols[symbols_len-2] = '\0';
+    symbols += 4;
+    symbols_len -= 6;
+    
+    int excluded_symbols_count = get_element_count(symbols, '|');
+    int *excluded_symbols = malloc(excluded_symbols_count * sizeof(int));
+    alphabet_symbols->symbol_count = program->alphabet_size - excluded_symbols_count;
+    alphabet_symbols->symbols = malloc(alphabet_symbols->symbol_count * sizeof(int));
+
+    for (int i = 0; i < excluded_symbols_count; ++i) {
+        excluded_symbols[i] = search_matching_element(&symbols, program->alphabet, program->alphabet_size);
+    }
+
+    int is_excluded = 0;
+    int index_counter = 0;
+    for (int i = 0; i < program->alphabet_size; ++i) {
+        // check if current alphabet symbol is in the excluded list and skip it
+        for (int j = 0; j < excluded_symbols_count; ++j) {
+            if (excluded_symbols[j] == i) {
+                is_excluded = 1;
+                break;
+            }
+        }
+        if (is_excluded == 0)
+            alphabet_symbols->symbols[index_counter++] = i;
+        else
+            is_excluded = 0;
+    }
+
+    free(excluded_symbols);
+}
+
+/*
  * Create a alphabet symbol helper struct.
  * The symbols contain a read/write symbol or a listing of those.
  * The helper struct contains how many and which symbols are used and if they should be matched 1 to 1 or 1 to n or None
@@ -140,9 +190,8 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
         alphabet_symbols->type = '1';
 
         // check if "[*] wildcard is used, then use all alphabet symbols
-        if (strcmp(symbols, "[*]") == 0) {
-            alphabet_symbols->symbol_count = program->alphabet_size;
-            alphabet_symbols->symbols = program->alphabet_indexes;
+        if (strncmp(symbols, "[*", 2) == 0) {
+            handle_wildcard_symbol(program, alphabet_symbols, symbols, symbols_len);
             return alphabet_symbols;
         }
 
@@ -158,9 +207,8 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
         alphabet_symbols->type = 'n';
 
         // check if "{*} wildcard is used, then use all alphabet symbols
-         if (strcmp(symbols, "{*}") == 0) {
-             alphabet_symbols->symbol_count = program->alphabet_size;
-             alphabet_symbols->symbols = program->alphabet_indexes;
+         if (strncmp(symbols, "{*", 2) == 0) {
+             handle_wildcard_symbol(program, alphabet_symbols, symbols, symbols_len);
              return alphabet_symbols;
          }
 
