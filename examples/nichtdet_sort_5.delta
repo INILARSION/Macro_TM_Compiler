@@ -6,11 +6,6 @@ D: start,2,SR2,2,>
 D: start,3,SR3,3,>
 D: start,4,SR4,4,>
 D: start,5,SR5,5,>
-D: start,1,SR1,1,>
-D: start,2,SR2,2,>
-D: start,3,SR3,3,>
-D: start,4,SR4,4,>
-D: start,5,SR5,5,>
 D: SL1, ,CheckR1, ,>
 D: CheckR1,1,CheckR1,1,>
 D: CheckR2,2,CheckR2,2,>
