@@ -1,0 +1,95 @@
+S: start,accept,reject,SBR,SBL,SRS,SLS,SR1,SR2,SR3,CheckR1,CheckR2,CheckR3,CheckL1,CheckL2,CheckL3,SWR1,SWR2,SWR3,SL1,SL2,SL3,SWL1,SWL2,SWL3
+G:  ,1,2,3
+D: start,1,SL1,1,<
+D: start,1,SR1,1,>
+D: start,2,SR2,2,>
+D: start,3,SR3,3,>
+D: start,1,SR1,1,>
+D: start,2,SR2,2,>
+D: start,3,SR3,3,>
+D: SL1, ,CheckR1, ,>
+D: CheckR1,1,CheckR1,1,>
+D: CheckR2,2,CheckR2,2,>
+D: CheckR3,3,CheckR3,3,>
+D: CheckR3, ,accept, ,-
+D: CheckR1,2,CheckR2,2,>
+D: CheckR2,3,CheckR3,3,>
+D: SR3, ,CheckL3, ,<
+D: CheckL1,1,CheckL1,1,<
+D: CheckL2,2,CheckL2,2,<
+D: CheckL3,3,CheckL3,3,<
+D: CheckL1, ,accept, ,-
+D: CheckL3,2,CheckL2,2,<
+D: CheckL2,1,CheckL1,1,<
+D: SR1,1,SR1,1,>
+D: SR1,2,SR2,2,>
+D: SR1,3,SR3,3,>
+D: SR2,1,SR1,1,>
+D: SR2,2,SR2,2,>
+D: SR2,3,SR3,3,>
+D: SR3,1,SR1,1,>
+D: SR3,2,SR2,2,>
+D: SR3,3,SR3,3,>
+D: SR1,1,SWR1,1,<
+D: SR2,1,SWR1,2,<
+D: SR3,1,SWR1,3,<
+D: SR1,2,SWR2,1,<
+D: SR2,2,SWR2,2,<
+D: SR3,2,SWR2,3,<
+D: SR1,3,SWR3,1,<
+D: SR2,3,SWR3,2,<
+D: SR3,3,SWR3,3,<
+D: SWR1,1,SBR,1,>
+D: SWR2,1,SBR,2,>
+D: SWR3,1,SBR,3,>
+D: SWR1,2,SBR,1,>
+D: SWR2,2,SBR,2,>
+D: SWR3,2,SBR,3,>
+D: SWR1,3,SBR,1,>
+D: SWR2,3,SBR,2,>
+D: SWR3,3,SBR,3,>
+D: SBR,1,SR1,1,>
+D: SBR,2,SR2,2,>
+D: SBR,3,SR3,3,>
+D: SL1,1,SL1,1,<
+D: SL1,2,SL2,2,<
+D: SL1,3,SL3,3,<
+D: SL2,1,SL1,1,<
+D: SL2,2,SL2,2,<
+D: SL2,3,SL3,3,<
+D: SL3,1,SL1,1,<
+D: SL3,2,SL2,2,<
+D: SL3,3,SL3,3,<
+D: SL1,1,SWL1,1,>
+D: SL2,1,SWL1,2,>
+D: SL3,1,SWL1,3,>
+D: SL1,2,SWL2,1,>
+D: SL2,2,SWL2,2,>
+D: SL3,2,SWL2,3,>
+D: SL1,3,SWL3,1,>
+D: SL2,3,SWL3,2,>
+D: SL3,3,SWL3,3,>
+D: SWL1,1,SBL,1,<
+D: SWL2,1,SBL,2,<
+D: SWL3,1,SBL,3,<
+D: SWL1,2,SBL,1,<
+D: SWL2,2,SBL,2,<
+D: SWL3,2,SBL,3,<
+D: SWL1,3,SBL,1,<
+D: SWL2,3,SBL,2,<
+D: SWL3,3,SBL,3,<
+D: SBL,1,SL1,1,<
+D: SBL,2,SL2,2,<
+D: SBL,3,SL3,3,<
+D: SR1, ,SLS, ,<
+D: SR2, ,SLS, ,<
+D: SR3, ,SLS, ,<
+D: SLS,1,SL1,1,<
+D: SLS,2,SL2,2,<
+D: SLS,3,SL3,3,<
+D: SL1, ,SRS, ,>
+D: SL2, ,SRS, ,>
+D: SL3, ,SRS, ,>
+D: SRS,1,SR1,1,>
+D: SRS,2,SR2,2,>
+D: SRS,3,SR3,3,>
