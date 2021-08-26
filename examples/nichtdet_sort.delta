@@ -1,0 +1,47 @@
+S: start,accept,reject,SBR,SBL,SRS,SLS
+G:  ,1,2,3,4,5
+D: start,1,SL1,1,<
+D: start,[*-( )],SR(*r),[*-( )],>
+D: start,[*-( )],SR(*r),[*-( )],>
+D: SL1, ,CheckR1, ,>
+D: CheckR(*r),[*-( )],CheckR(*w),[*-( )],>
+D: CheckR5, ,accept, ,-
+D: CheckR1,2,CheckR2,2,>
+D: CheckR2,3,CheckR3,3,>
+D: CheckR3,4,CheckR4,4,>
+D: CheckR4,5,CheckR5,5,>
+D: SR5, ,CheckL5, ,<
+D: CheckL(*r),[*-( )],CheckL(*w),[*-( )],<
+D: CheckL1, ,accept, ,-
+D: CheckL5,4,CheckL4,4,<
+D: CheckL4,3,CheckL3,3,<
+D: CheckL3,2,CheckL2,2,<
+D: CheckL2,1,CheckL1,1,<
+D: SR1,[*-( )],SR(*r),[*-( )],>
+D: SR2,[*-( )],SR(*r),[*-( )],>
+D: SR3,[*-( )],SR(*r),[*-( )],>
+D: SR4,[*-( )],SR(*r),[*-( )],>
+D: SR5,[*-( )],SR(*r),[*-( )],>
+D: SR(*w),{*-( )},SWR(*r),{*-( )},<
+D: SWR(*w),{*-( )},SBR,{*-( )},>
+D: SBR,[*-( )],SR(*r),[*-( )],>
+D: SL1,[*-( )],SL(*r),[*-( )],<
+D: SL2,[*-( )],SL(*r),[*-( )],<
+D: SL3,[*-( )],SL(*r),[*-( )],<
+D: SL4,[*-( )],SL(*r),[*-( )],<
+D: SL5,[*-( )],SL(*r),[*-( )],<
+D: SL(*w),{*-( )},SWL(*r),{*-( )},>
+D: SWL(*w),{*-( )},SBL,{*-( )},<
+D: SBL,[*-( )],SL(*r),[*-( )],<
+D: SR1, ,SLS, ,<
+D: SR2, ,SLS, ,<
+D: SR3, ,SLS, ,<
+D: SR4, ,SLS, ,<
+D: SR5, ,SLS, ,<
+D: SLS,[*-( )],SL(*r),[*-( )],<
+D: SL1, ,SRS, ,>
+D: SL2, ,SRS, ,>
+D: SL3, ,SRS, ,>
+D: SL4, ,SRS, ,>
+D: SL5, ,SRS, ,>
+D: SRS,[*-( )],SR(*r),[*-( )],>
