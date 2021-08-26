@@ -183,7 +183,8 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
 
      if (symbols[0] == '[') {
         if (symbols[symbols_len - 1] != ']') {
-            printf("Malformed delta, ) ist missing!");
+            printf("Malformed delta, ] ist missing!\n");
+            printf("Line: %s\n", symbols);
             exit(-1);
         }
 
@@ -200,7 +201,7 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
         ++symbols;
     } else if (symbols[0] == '{') {
         if (symbols[symbols_len - 1] != '}') {
-            printf("Malformed delta, ] is missing!");
+            printf("Malformed delta, } is missing!");
             exit(-1);
         }
 
@@ -295,6 +296,7 @@ char *generate_state_str(struct program *program, struct state_helper *state_hel
 void generate_1t1_deltas(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement) {
     if (read_symbols->symbol_count != write_symbols->symbol_count) {
         printf("Number of read symbols are not equal the number of write symbols!\n");
+        printf("Read symbols: %d, write symbols: %d\n", read_symbols->symbol_count, write_symbols->symbol_count);
         exit(-1);
     }
 
