@@ -14,8 +14,7 @@ int main(int argc, char** argv) {
         output_file = argv[2];
     else {
         output_file = calloc(strlen(program_file_path) + 5, sizeof(char));
-        strcpy(output_file, program_file_path);
-        strcat(output_file, ".out");
+        sprintf(output_file, "%s.out", program_file_path);
     }
 
     struct program *program = parse_program(program_file_path);
