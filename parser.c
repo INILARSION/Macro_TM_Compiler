@@ -103,7 +103,8 @@ int search_matching_element(char **line, char **elements, int element_count) {
         }
     }
     if (found_match == -1) {
-        printf("Program delta contains state or tape symbol which is not contained in the defined!");
+        printf("Program delta contains state or tape symbol which is not contained in the defined!\n");
+        printf("Item is: %s\n", tmp_str);
         exit(-1);
     }
     return matched_index;
@@ -202,6 +203,7 @@ struct alphabet_symbols *get_alphabet_symbols(struct program *program, char *sym
     } else if (symbols[0] == '{') {
         if (symbols[symbols_len - 1] != '}') {
             printf("Malformed delta, } is missing!");
+            printf("Line: %s\n", symbols);
             exit(-1);
         }
 
@@ -293,9 +295,9 @@ char *generate_state_str(struct program *program, struct state_helper *state_hel
  * Example: read symbols: (a|b|c) write symbols: (x|y|) will generate deltas with: (a,x), (b,y), (c,z) as (read, write) symbols
  * number of read and write symbols have to be the same
  */
-void generate_1t1_deltas(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement) {
+void generate_1t1_deltas(struct program *program, struct state_helper *state, struct state_helper *subsequent_state, struct alphabet_symbols *read_symbols, struct alphabet_symbols *write_symbols, char movement, int line_num) {
     if (read_symbols->symbol_count != write_symbols->symbol_count) {
-        printf("Number of read symbols are not equal the number of write symbols!\n");
+        printf("Number of read symbols of delta number %d are not equal the number of write symbols!\n", line_num + 1);
         printf("Read symbols: %d, write symbols: %d\n", read_symbols->symbol_count, write_symbols->symbol_count);
         exit(-1);
     }
@@ -394,7 +396,7 @@ void parse_deltas(struct program *program, FILE *file_ptr, int line_count) {
 
         // check formatting and size
         if (line_length < 12 || tmp_line[0] != 'D'){
-            printf("Delta has wrong formatting!");
+            printf("Delta number %d has wrong formatting!", i + 1);
             exit(-1);
         }
 
@@ -413,7 +415,7 @@ void parse_deltas(struct program *program, FILE *file_ptr, int line_count) {
         struct state_helper *subsequent_state = get_state_helper(subsequent_state_str);
 
         if (read_symbols->type != write_symbols->type) {
-            printf("Delta is malformed, read/write symbol makros don't match!\n");
+            printf("Delta is malformed, read/write symbol makros don't match in delta number %d!\n", i + 1);
             exit(-1);
         }
 
@@ -423,7 +425,7 @@ void parse_deltas(struct program *program, FILE *file_ptr, int line_count) {
                 generate_1_delta(program, state, subsequent_state, read_symbols, write_symbols, movement);
                 break;
             case '1':
-                generate_1t1_deltas(program, state, subsequent_state, read_symbols, write_symbols, movement);
+                generate_1t1_deltas(program, state, subsequent_state, read_symbols, write_symbols, movement, i);
                 break;
             case 'n':
                 generate_1tn_deltas(program, state, subsequent_state, read_symbols, write_symbols, movement);
